@@ -1,0 +1,40 @@
+This file contains message digests of all files listed in MANIFEST,
+signed via the Module::Signature module, version 0.55.
+
+To verify the content in this distribution, first make sure you have
+Module::Signature installed, then type:
+
+    % cpansign -v
+
+It will check each file's integrity, as well as the signature's
+validity.  If "==> Signature verified OK! <==" is not displayed,
+the distribution may already have been compromised, and you should
+not run its Makefile.PL or Build.PL.
+
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+SHA1 0410c55132bb962098cb00a407ac79e1990c4d7c Changes
+SHA1 920a1ddff23df412343d700e50fb498bf2ccd6a8 MANIFEST
+SHA1 e6077174cf51914c7976cdbced4e2ccaa7a3de15 META.yml
+SHA1 242cb0e08ce1c276903a867eaa55f1e7962357e9 Makefile.PL
+SHA1 b1ab2fc2a1541a043264c59562abeb87ed338e55 README
+SHA1 9a4e68f660f0f8b645764d0f4c3a0f8a1782284d example/perlport.beam
+SHA1 fe69b7b8f010b06c85f2d5b84dc605fea40fbf9f example/perlport.erl
+SHA1 58dc1d060d527585fad7d7b6ee47122f2ca85595 example/perlre.beam
+SHA1 650dd7b6b151190d56f8ca20ee978dea1d87a640 example/perlre.erl
+SHA1 4a8a6b212c44a597965fe9b23d11553b74530b91 example/perlre.pl
+SHA1 3aca1cdbbdc13088fd636531f0d885560b64cd61 inc/ExtUtils/MY_Metafile.pm
+SHA1 d440cb3550162fde6b94d0dd09dbd75653a2aefe lib/Erlang/Port.pm
+SHA1 89363b86c4e16e1e1c1ff216b853ca85fccae641 t/00-load.t
+SHA1 2d71bf43586b58db95f5cd0c930443cff5b6eb8b t/97_podspell.t
+SHA1 e5ae02588a8cc092a3cb804bb99f9ba482d8c286 t/boilerplate.t
+SHA1 6da39b48ce64b584e4c3274bff96fc76ff484820 t/pod-coverage.t
+SHA1 0190346d7072d458c8a10a45c19f86db641dcc48 t/pod.t
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2 (GNU/Linux)
+
+iD8DBQFGT77lewjCT38k4dkRAha9AJ9ohWK+iRhEP6i4GcYHBNiXeZ50ggCfUlp0
+E1hbYK/RoQlCpC13kYsxr6U=
+=ayT4
+-----END PGP SIGNATURE-----
