@@ -1,5 +1,5 @@
 % -----------------------------------------------------------------------------
-% perlre.erl
+% perleval.erl
 % -----------------------------------------------------------------------------
 % Mastering programmed by YAMASHINA Hio
 %
@@ -7,32 +7,39 @@
 % -----------------------------------------------------------------------------
 % $Id
 % -----------------------------------------------------------------------------
--module(perlre).
--export([match/2]).
+-module(perleval).
+-export([eval/1, set/2]).
 -export([start/0, start/1, stop/0]).
 -import(perlport, [call/2]).
 
 % -----------------------------------------------------------------------------
-% match(String, Regexp).
+% eval(String).
 %
-match(String, Regexp) ->
+eval(String) ->
 	start(),
-	call([match, String, Regexp], perlre).
+	call([eval, String], perleval).
+
+% -----------------------------------------------------------------------------
+% set(VarName, String).
+%
+set(VarName, String) ->
+	start(),
+	call([set, VarName, String], perleval).
 
 % -----------------------------------------------------------------------------
 % start().
 % start(Script).
 %
 start() ->
-	start("perlre.pl").
+	start("perleval.pl").
 start(Script) ->
-  perlport:start(Script, perlre).
+  perlport:start(Script, perleval).
 
 % -----------------------------------------------------------------------------
 % stop().
 %
 stop() ->
-	perlport:stop(perlre).
+	perlport:stop(perleval).
 
 % -----------------------------------------------------------------------------
 % End of Module.

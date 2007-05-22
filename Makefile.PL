@@ -11,6 +11,12 @@ my_metafile('Erlang::Port' => {
 	license  => 'perl',
 	requires => $requires,
 	build_requires => $build_requires,
+	no_index => {
+		directory => [
+			'inc',
+			't',
+		],
+	},
 });
 WriteMakefile(
     NAME                => 'Erlang::Port',

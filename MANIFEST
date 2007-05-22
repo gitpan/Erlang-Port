@@ -4,6 +4,9 @@ META.yml
 Makefile.PL
 README
 SIGNATURE
+example/perleval.beam
+example/perleval.erl
+example/perleval.pl
 example/perlport.beam
 example/perlport.erl
 example/perlre.beam

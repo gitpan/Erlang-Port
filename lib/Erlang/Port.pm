@@ -5,13 +5,13 @@
 #
 # Copyright 2007 YAMASHINA Hio
 # -----------------------------------------------------------------------------
-# $Id$
+# $Id: /perl/Erlang-Port/lib/Erlang/Port.pm 388 2007-05-22T11:24:11.684354Z hio  $
 # -----------------------------------------------------------------------------
 package Erlang::Port;
 use strict;
-use warnings FATAL => 'all';
+use warnings;
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 # constans.
 our $SMALL_INTEGER_EXT = 'a';
@@ -229,17 +229,17 @@ sub decode
 			push(@{$stack[-1]}, $obj);
 		}else
 		{
-	#$REFERENCE_EXT     = 'e';
-	#$NEW_REFERENCE_EXT = 'r';
-	#$BIT_BINARY_EXT    = 'M';
-	#$SMALL_BIG_EXT     = 'n';
-	#$LARGE_BIG_EXT     = 'o';
-	#$NEW_FUN_EXT       = 'p';
-	#$EXPORT_EXT        = 'q';
-	#$FUN_EXT           = 'u';
-	#$NEW_CACHE         = 'N';
-	#$CACHED_ATOM       = 'C';
-	#$COMPRESSED        = 'P';
+			#$REFERENCE_EXT     = 'e';
+			#$NEW_REFERENCE_EXT = 'r';
+			#$BIT_BINARY_EXT    = 'M';
+			#$SMALL_BIG_EXT     = 'n';
+			#$LARGE_BIG_EXT     = 'o';
+			#$NEW_FUN_EXT       = 'p';
+			#$EXPORT_EXT        = 'q';
+			#$FUN_EXT           = 'u';
+			#$NEW_CACHE         = 'N';
+			#$CACHED_ATOM       = 'C';
+			#$COMPRESSED        = 'P';
 			my $id = substr($data,0,1);
 			my $chr = unpack("C",$id);
 			$out and print $out "not ready $id ($chr).\r\n";
@@ -251,11 +251,57 @@ sub decode
 			pop @stack;
 			if( !UNIVERSAL::isa($data, 'Erlang::Tuple') )
 			{
+				# List.
 				$data =~ s/^$NIL_EXT//;
+				my $list = $stack[-1]->[-1];
+				my $hash = {};
+				foreach my $item (@$list)
+				{
+					if( !UNIVERSAL::isa($item, 'Erlang::Tuple') || @$item!=2 )
+					{
+						$hash = undef;
+						last;
+					}
+					my $key = $this->to_s($item->[0]);
+					if( !defined($key) )
+					{
+						$hash = undef;
+						last;
+					}
+					$hash->{$key} = $item->[1];
+				}
+				if( $hash && @$list )
+				{
+					$stack[-1]->[-1] = $hash;
+				}
 			}
 		}
 	}
 	$stack[0]->[0];
+}
+
+# -----------------------------------------------------------------------------
+# $port->to_s($obj);
+sub to_s
+{
+	my $this = shift;
+	my $obj  = shift;
+	if( defined($obj) && !ref($obj) )
+	{
+		$obj;
+	}elsif( $obj && ref($obj) eq 'ARRAY' && @$obj==0 )
+	{
+		"";
+	}elsif( ref($obj) && UNIVERSAL::isa($obj, 'Erlang::Atom') )
+	{
+		$$obj;
+	}elsif( ref($obj) && UNIVERSAL::isa($obj, 'Erlang::Binary') )
+	{
+		$$obj;
+	}else
+	{
+		undef;
+	}
 }
 
 # -----------------------------------------------------------------------------
@@ -364,6 +410,16 @@ sub _encode
 		{
 			$LIST_EXT . pack('N', 0+@$obj) . $this->_encode_list(@$obj, []);
 		}
+	}elsif( UNIVERSAL::isa($obj, 'HASH') )
+	{
+		# List of Tuples.
+		my @conv;
+		foreach my $key (sort keys %$obj)
+		{
+			my $atom = $this->_newAtom($key);
+			push(@conv, $this->_newTuple([$atom, $obj->{$key}]));
+		}
+		$this->_encode(\@conv);
 	}elsif( !ref($obj) )
 	{
 		if( !defined($obj) )
@@ -410,6 +466,7 @@ __END__
 	CPAN
 	RT
 	obj
+	AnyObject
 
 =head1 NAME
 
@@ -417,13 +474,14 @@ Erlang::Port - Erlang External Port
 
 =head1 VERSION
 
-Version 0.03
+Version 0.04
 
 =head1 SYNOPSIS
 
  use Erlang::Port;
  
- Erlang::Port->new(sub{ ... })->loop();
+ my $port = Erlang::Port->new(sub{ ... });
+ $port->loop();
 
 =head1 EXPORT
 
@@ -444,6 +502,20 @@ Encode Erlang obj into external sequence.
 =head2 $pkg->decode($bytes);
 
 Decode external sequence into Erlang object.
+
+=head2 $pkg->to_s($obj);
+
+Make string form of $obj.
+
+=head1 EXAMPLES
+
+See F<examples/> directory in this distribution.
+
+F<examples/perlre.erl> has match(String, RegExp) 
+and gsub(String, RegExp, Replacement).
+
+F<examples/perleval.erl> has eval(String)
+and set(VarName, AnyObject).
 
 =head1 AUTHOR
 

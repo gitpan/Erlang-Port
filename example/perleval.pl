@@ -1,14 +1,14 @@
 #! /usr/bin/perl -w
 ## ----------------------------------------------------------------------------
-#  perlre.pl, Erlang::Port::Regexp.
+#  perleval.pl, Erlang::Port::Eval.
 # -----------------------------------------------------------------------------
 # Mastering programmed by YAMASHINA Hio
 #
 # Copyright 2007 YAMASHINA Hio
 # -----------------------------------------------------------------------------
-# $Id: /perl/Erlang-Port/example/perlre.pl 388 2007-05-22T11:24:11.684354Z hio  $
+# $Id: /perl/Erlang-Port/example/perleval.pl 388 2007-05-22T11:24:11.684354Z hio  $
 # -----------------------------------------------------------------------------
-package Erlang::Port::Regexp;
+package Erlang::Port::Eval;
 use strict;
 use warnings;
 use Erlang::Port;
@@ -56,22 +56,62 @@ sub _my_proc
 	}
 	
 	my $key = _to_s($obj->[0]);
-	if( !defined($key) || $key ne 'match' )
+	if( !defined($key) )
 	{
 		return $port->_newTuple([$port->_newAtom('badarg'), $obj]);
 	}
 	
-	my $str = _to_s($obj->[1]);
-	my $re  = _to_s($obj->[2]);
-	if( !defined($str) || !defined($re) )
+	my ($sub, @args);
+	if( $key eq 'eval' )
+	{
+		@args = (_to_s($obj->[1]));
+		$sub = sub{
+			my $str = shift;
+			
+			my $log = $port->{log};
+			$log and print $log "str = [$str]\n";
+			
+			my $ret = eval "no strict 'vars';".$str;
+			if( $@ )
+			{
+				return $port->_newTuple([$port->_newAtom('error'), $@]);
+			}
+			$ret;
+		};
+	}elsif( $key eq 'set' )
+	{
+		$args[0] = _to_s($obj->[1]);
+		$args[1] = $obj->[2];
+		$sub = sub{
+			my $key = shift;
+			my $val = shift;
+			
+			my $log = $port->{log};
+			$log and print $log "key = [$key]\n";
+			$log and print $log "val = [".Dumper($val)."]\n";
+			
+			if( $key !~ /^(\w+)\z/ )
+			{
+				return $port->_newTuple([$port->_newAtom('badarg'), $obj]);
+			}
+			do
+			{
+				no strict 'refs';
+				$$1 = $val;
+			};
+			$val;
+		};
+	}else
 	{
 		return $port->_newTuple([$port->_newAtom('badarg'), $obj]);
 	}
-	my $log = $port->{log};
-	$log and print $log "str = [$str]\n";
-	$log and print $log "re  = [$re]\n";
+	if( grep{!defined($_)} @args )
+	{
+		return $port->_newTuple([$port->_newAtom('badarg'), $obj]);
+	}
 	
-	[$str =~ $re];
+	my $ret = $sub->(@args);
+	$ret;
 }
 
 sub _to_s
@@ -126,34 +166,51 @@ __END__
 
 =head1 NAME
 
-example/perlre.pl - Erlang::Port example
+example/perleval.pl - Erlang::Port example
 
 =head1 SYNOPSIS
 
  example/$ erl
- 1> perlre:start("perl -Mblib perlre.pl").
+ 1> perleval:start("perl -Mblib perleval.pl").
  #Port<0.94>
- 2> perlre:match("abc", "(\\w+)(.+)").
- ["ab","c"]
+ 2> perleval:eval("1+2").
+ 3
 
 =head1 DESCRIPTION
 
 Example for L<Erlang::PerlPort>.
 
-=head2 perlre:start().
+=head2 perleval:start().
 
-=head2 perlre:start(Script).
+=head2 perleval:start(Script).
 
 Start script in an erlang external port.
-Default is "perlre.pl".
+Default is "perleval.pl".
 
-=head2 perlre:stop().
+=head2 perleval:stop().
 
 Stop port.
 
-=head2 perlre:match(String, Regexp).
+=head2 perleval:eval(String).
 
-execute $String =~ $Regexp in perl interpreter.
+eval $String in perl interpreter.
+
+=head2 perleval:set(VarName, Object).
+
+set Object into $VarName in perl.
+
+=head1 EXAMPLE
+
+ 1> perleval:start("perl -Mblib perleval.pl").
+ #Port<0.94>
+ 2> perleval:eval("1+2").
+ 3
+ 3> perleval:set(var, [{a,3}, {b,4}]).
+ [{a,3},{b,4}]
+ 4> perleval:eval("$var->{a} * $var->{b}").
+ 12
+ 5> perleval:eval("$var").
+ [{a,3},{b,4}]
 
 =head1 SEE ALSO
 

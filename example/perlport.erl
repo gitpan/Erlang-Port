@@ -35,9 +35,9 @@ call(Msg, PortName) ->
 	case whereis(PortName) of
 	undefined -> undefined;
 	Port -> 
-  	Port ! { self(), { command, term_to_binary(Msg) } },
+		Port ! { self(), { command, term_to_binary(Msg) } },
 		receive
-	  	{Port, {data, Any}} -> binary_to_term(Any)
+			{Port, {data, Any}} -> binary_to_term(Any)
 		end
 	end.
 
@@ -49,17 +49,17 @@ call(Msg, PortName) ->
 start() ->
 	start("./perlport.pl").
 start(Script) ->
-  start(Script, perlport).
+	start(Script, perlport).
 start(Script, PortName) ->
-  start(Script, PortName, whereis(PortName)).
+	start(Script, PortName, whereis(PortName)).
 start(Script, PortName, undefined) ->
 	% Script:   "./perlport.pl".
 	% PortName: perlport
-  Pid = open_port({spawn, Script},[{packet,2}, binary]),
+	Pid = open_port({spawn, Script},[{packet,2}, binary]),
 	register(PortName,Pid),
 	Pid;
 start(_Script, _PortName, Pid) ->
-  Pid.
+	Pid.
 
 % -----------------------------------------------------------------------------
 % stop().
